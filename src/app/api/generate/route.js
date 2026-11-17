@@ -18,13 +18,12 @@ function getResolution(aspectRatio, quality) {
   }
 }
 
-// Build ComfyUI prompt workflow JSON for Wan 2.2 (14B T2V and I2V)
+// Build ComfyUI prompt workflow JSON for Wan 2.1 (14B I2V and T2V)
 function buildWanWorkflow({ mode, prompt, negativePrompt, width, height, quality, imageUrl }) {
   const isI2V = mode === "i2v" && Boolean(imageUrl);
-  const steps = quality === "wan2.2-fast" ? 20 : 30;
-  const modelName = isI2V
-    ? config.ai.comfyui.defaultI2VModel
-    : config.ai.comfyui.defaultT2VModel;
+  const steps = quality === "wan2.2-fast" ? 15 : 25;
+  const numFrames = quality === "wan2.2-fast" ? 17 : 33;
+  const modelFile = "Wan2_1-I2V-14B-480P_fp8_e4m3fn.safetensors";
 
   const defaultNeg = negativePrompt?.trim() || 
     "色调艳丽，过曝，静态，残缺，失真，模糊，低分辨率，扭曲的面部，肢体残缺，水印，字幕, blurry, deformed limbs, low quality";
@@ -33,62 +32,76 @@ function buildWanWorkflow({ mode, prompt, negativePrompt, width, height, quality
     "1": {
       "class_type": "WanVideoModelLoader",
       "inputs": {
-        "model_name": modelName
+        "model": modelFile,
+        "base_precision": "bf16",
+        "quantization": "fp8_e4m3fn",
+        "load_device": "offload_device"
       }
     },
     "2": {
-      "class_type": "CLIPTextEncode",
+      "class_type": "WanVideoVAELoader",
       "inputs": {
-        "text": prompt,
-        "clip": ["1", 1]
+        "model_name": "Wan2_1_VAE_fp32.safetensors",
+        "precision": "bf16"
       }
     },
     "3": {
-      "class_type": "CLIPTextEncode",
+      "class_type": "WanVideoTextEncodeCached",
       "inputs": {
-        "text": defaultNeg,
-        "clip": ["1", 1]
+        "model_name": "umt5-xxl-enc-fp8_e4m3fn.safetensors",
+        "precision": "bf16",
+        "positive_prompt": prompt,
+        "negative_prompt": defaultNeg,
+        "quantization": "fp8_e4m3fn",
+        "use_disk_cache": false,
+        "device": "gpu"
       }
     },
-    "4": isI2V
-      ? {
-          "class_type": "WanImageToVideo",
-          "inputs": {
-            "image": ["8", 0],
-            "width": width,
-            "height": height,
-            "length": 81
-          }
-        }
-      : {
-          "class_type": "WanEmptyLatentVideo",
-          "inputs": {
-            "width": width,
-            "height": height,
-            "length": 81,
-            "batch_size": 1
-          }
-        },
-    "5": {
-      "class_type": "KSampler",
+    "8": {
+      "class_type": "LoadImage",
       "inputs": {
-        "seed": Math.floor(Math.random() * 10000000000),
+        "image": imageUrl || "default_t2v_init.png"
+      }
+    },
+    "4": {
+      "class_type": "WanVideoImageToVideoEncode",
+      "inputs": {
+        "width": width,
+        "height": height,
+        "num_frames": numFrames,
+        "noise_aug_strength": 0.0,
+        "start_latent_strength": isI2V ? 1.0 : 0.0,
+        "end_latent_strength": isI2V ? 1.0 : 0.0,
+        "force_offload": true,
+        "vae": ["2", 0],
+        "start_image": ["8", 0]
+      }
+    },
+    "5": {
+      "class_type": "WanVideoSampler",
+      "inputs": {
+        "model": ["1", 0],
+        "image_embeds": ["4", 0],
+        "text_embeds": ["3", 0],
         "steps": steps,
         "cfg": 6.0,
-        "sampler_name": "euler",
-        "scheduler": "simple",
-        "denoise": 1.0,
-        "model": ["1", 0],
-        "positive": ["2", 0],
-        "negative": ["3", 0],
-        "latent_image": ["4", 0]
+        "shift": 5.0,
+        "seed": Math.floor(Math.random() * 10000000000),
+        "force_offload": true,
+        "scheduler": "unipc",
+        "riflex_freq_index": 0
       }
     },
     "6": {
-      "class_type": "VAEDecode",
+      "class_type": "WanVideoDecode",
       "inputs": {
+        "vae": ["2", 0],
         "samples": ["5", 0],
-        "vae": ["1", 2]
+        "enable_vae_tiling": true,
+        "tile_x": 272,
+        "tile_y": 272,
+        "tile_stride_x": 144,
+        "tile_stride_y": 128
       }
     },
     "7": {
@@ -97,21 +110,13 @@ function buildWanWorkflow({ mode, prompt, negativePrompt, width, height, quality
         "images": ["6", 0],
         "frame_rate": 16,
         "loop_count": 0,
-        "filename_prefix": "PornMake_Wan22",
+        "filename_prefix": "pornmakes_video",
         "format": "video/h264-mp4",
+        "pingpong": false,
         "save_output": true
       }
     }
   };
-
-  if (isI2V) {
-    workflow["8"] = {
-      "class_type": "LoadImage",
-      "inputs": {
-        "image": imageUrl
-      }
-    };
-  }
 
   return workflow;
 }
@@ -252,7 +257,6 @@ export async function GET(req) {
     }
 
     const comfyApiUrl = process.env.COMFYUI_API_URL || config.ai.comfyui.apiUrl;
-    const isLocalhost = !comfyApiUrl || comfyApiUrl.includes("127.0.0.1") || comfyApiUrl.includes("localhost");
 
     // 1. Fetch creation record from database
     let creation = null;
@@ -276,8 +280,8 @@ export async function GET(req) {
       });
     }
 
-    // 2. If connected to a real remote GPU cluster (not localhost)
-    if (!isLocalhost) {
+    // 2. Poll ComfyUI GPU backend if configured
+    if (comfyApiUrl) {
       try {
         const historyRes = await fetch(`${comfyApiUrl}/history/${taskId}`, {
           headers: { "Content-Type": "application/json" },

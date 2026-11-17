@@ -19,7 +19,7 @@ export async function POST(req) {
     const buffer = Buffer.from(arrayBuffer);
 
     // 1. If ComfyUI is configured, attempt uploading directly to ComfyUI /upload/image
-    if (comfyApiUrl && !comfyApiUrl.includes("127.0.0.1")) {
+    if (comfyApiUrl) {
       try {
         const comfyFormData = new FormData();
         const blob = new Blob([buffer], { type: file.type || "image/png" });
