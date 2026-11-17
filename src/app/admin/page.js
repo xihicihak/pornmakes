@@ -687,7 +687,7 @@ export default function AdminPage() {
                 </a>
 
                 <a
-                  href="https://vercel.com/xihicihak/seedance-2-generator"
+                  href="https://vercel.com/xihicihak/pornmakes"
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/60 border border-zinc-800 hover:border-zinc-700 text-xs text-zinc-300 hover:text-white transition-all group"
