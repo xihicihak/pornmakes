@@ -175,7 +175,7 @@ export async function POST(req) {
     }
 
     const { width, height } = getResolution(aspectRatio, quality);
-    const comfyApiUrl = process.env.COMFYUI_API_URL || config.ai.comfyui.apiUrl;
+    const comfyApiUrl = config.ai.comfyui.apiUrl;
     const workflow = buildWanWorkflow({ mode, prompt, negativePrompt, width, height, quality, imageUrl });
 
     let taskId = null;
@@ -295,7 +295,7 @@ export async function GET(req) {
       return NextResponse.json({ error: "taskId is required" }, { status: 400 });
     }
 
-    const comfyApiUrl = process.env.COMFYUI_API_URL || config.ai.comfyui.apiUrl;
+    const comfyApiUrl = config.ai.comfyui.apiUrl;
 
     // 1. Fetch creation record from database
     let creation = null;

@@ -14,7 +14,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "No valid image file provided" }, { status: 400 });
     }
 
-    const comfyApiUrl = process.env.COMFYUI_API_URL || config.ai.comfyui.apiUrl;
+    const comfyApiUrl = config.ai.comfyui.apiUrl;
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 

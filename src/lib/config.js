@@ -3,6 +3,18 @@
  * All environment variables are validated and exported from here.
  */
 
+const DEFAULT_PUBLIC_GPU_URL = "https://merely-parks-scores-lightning.trycloudflare.com";
+
+export function resolveComfyUrl() {
+  const envUrl = process.env.COMFYUI_API_URL;
+  // If in production on Vercel or public cloud, 127.0.0.1 is unreachable -> route through public GPU tunnel
+  const isProd = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+  if (isProd && (!envUrl || envUrl.includes("127.0.0.1") || envUrl.includes("localhost"))) {
+    return DEFAULT_PUBLIC_GPU_URL;
+  }
+  return envUrl || DEFAULT_PUBLIC_GPU_URL;
+}
+
 const config = {
   appName: "PornMake - Wan 2.2 Studio",
   brandName: "PornMake",
@@ -55,7 +67,7 @@ const config = {
   },
   ai: {
     comfyui: {
-      apiUrl: process.env.COMFYUI_API_URL || "https://merely-parks-scores-lightning.trycloudflare.com",
+      apiUrl: resolveComfyUrl(),
       defaultT2VModel: "wan2.1_t2v_14B_bf16.safetensors",
       defaultI2VModel: "wan2.1_i2v_14B_720p.safetensors",
     },
