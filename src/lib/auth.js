@@ -13,6 +13,7 @@ if (googleClientId && googleClientSecret) {
     GoogleProvider({
       clientId: googleClientId,
       clientSecret: googleClientSecret,
+      allowDangerousEmailAccountLinking: true,
     })
   );
 }
@@ -127,7 +128,8 @@ export const authOptions = {
       const adminEmails = (process.env.ADMIN_EMAILS || "xihicihak43@gmail.com").split(",").map(e => e.trim().toLowerCase());
       if (user) {
         token.id = user.id;
-        token.credits = user.credits;
+        token.email = user.email || token.email;
+        token.credits = user.credits ?? 30;
         token.customApiKey = user.customApiKey;
         token.isApiKeyUser = user.isApiKeyUser || false;
         token.role = (user.email && adminEmails.includes(user.email.toLowerCase())) ? "ADMIN" : (user.role || "USER");
@@ -138,19 +140,28 @@ export const authOptions = {
         if (session.role !== undefined) token.role = session.role;
       }
       const userId = token.id || token.sub;
-      if (userId) {
-        token.id = userId;
-        try {
-          const dbUser = await prisma.user.findUnique({
+      try {
+        let dbUser = null;
+        if (userId) {
+          dbUser = await prisma.user.findUnique({
             where: { id: userId },
-            select: { credits: true, customApiKey: true, role: true, email: true }
+            select: { id: true, credits: true, customApiKey: true, role: true, email: true }
           });
-          if (dbUser) {
-            token.credits = dbUser.credits;
-            token.customApiKey = dbUser.customApiKey;
-            token.role = (dbUser.email && adminEmails.includes(dbUser.email.toLowerCase())) ? "ADMIN" : (dbUser.role || "USER");
-          }
-        } catch (err) {}
+        }
+        if (!dbUser && token.email) {
+          dbUser = await prisma.user.findUnique({
+            where: { email: token.email.toLowerCase() },
+            select: { id: true, credits: true, customApiKey: true, role: true, email: true }
+          });
+        }
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.credits = dbUser.credits ?? 30;
+          token.customApiKey = dbUser.customApiKey;
+          token.role = (dbUser.email && adminEmails.includes(dbUser.email.toLowerCase())) ? "ADMIN" : (dbUser.role || "USER");
+        }
+      } catch (err) {
+        console.error("[JWT_FETCH_USER_ERROR]", err);
       }
       return token;
     },

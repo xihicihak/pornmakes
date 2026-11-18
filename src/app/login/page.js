@@ -23,6 +23,19 @@ function LoginContent() {
     }
   }, [status, router, next]);
 
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      if (errorParam === "OAuthAccountNotLinked") {
+        toast.error("该邮箱已被注册，正在自动绑定，请重新点击登录。");
+      } else if (errorParam === "OAuthSignin" || errorParam === "OAuthCallback") {
+        toast.error("Google 授权登录回调失败，请重试。");
+      } else {
+        toast.error(`登录状态提示: ${errorParam}`);
+      }
+    }
+  }, [searchParams]);
+
   const [email, setEmail] = useState("");
 
   const handleEmailLogin = async (e) => {

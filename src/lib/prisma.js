@@ -4,7 +4,17 @@ import { Pool } from "pg";
 
 const globalForPrisma = globalThis;
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const connectionString = process.env.DATABASE_URL;
+const isLocalhost = !connectionString || connectionString.includes("localhost") || connectionString.includes("127.0.0.1");
+
+if (!isLocalhost) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
+
+const pool = new Pool({
+  connectionString,
+  ssl: isLocalhost ? false : { rejectUnauthorized: false }
+});
 const adapter = new PrismaPg(pool);
 
 export const prisma =
