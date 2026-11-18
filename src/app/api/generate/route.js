@@ -207,7 +207,8 @@ export async function POST(req) {
       taskId = `wan22_task_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     }
 
-    // 3. Save creation record to database with failure compensation
+    // 3. Save creation record to database with failure compensation & self-healing schema migration
+    let creationRecorded = false;
     try {
       await prisma.creation.create({
         data: {
@@ -220,18 +221,52 @@ export async function POST(req) {
           userId: session.user.id,
         }
       });
+      creationRecorded = true;
     } catch (dbErr) {
-      console.error("[DB] Could not record creation, rolling back credits:", dbErr.message);
-      // Automatic compensation refund on database error
+      console.warn("[DB] First attempt to record creation failed, attempting auto schema sync:", dbErr.message);
       try {
-        await prisma.user.update({
-          where: { id: session.user.id },
-          data: { credits: { increment: COST } },
+        await prisma.$executeRawUnsafe(`
+          ALTER TABLE "Creation" ADD COLUMN IF NOT EXISTS "isPublished" BOOLEAN DEFAULT false;
+          ALTER TABLE "Creation" ADD COLUMN IF NOT EXISTS "price" INTEGER DEFAULT 10;
+          ALTER TABLE "Creation" ADD COLUMN IF NOT EXISTS "audioFiles" TEXT[] DEFAULT ARRAY[]::TEXT[];
+          ALTER TABLE "Creation" ADD COLUMN IF NOT EXISTS "videoFiles" TEXT[] DEFAULT ARRAY[]::TEXT[];
+          ALTER TABLE "Creation" ADD COLUMN IF NOT EXISTS "inputImages" TEXT;
+          CREATE TABLE IF NOT EXISTS "CreationPurchase" (
+            "id" TEXT NOT NULL PRIMARY KEY,
+            "userId" TEXT NOT NULL,
+            "creationId" TEXT NOT NULL,
+            "creatorId" TEXT NOT NULL,
+            "amountPaid" INTEGER NOT NULL,
+            "creatorAmount" INTEGER NOT NULL,
+            "maintenanceFee" INTEGER NOT NULL,
+            "platformFee" INTEGER NOT NULL,
+            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+        await prisma.creation.create({
+          data: {
+            prompt,
+            imageUrl: imageUrl || null,
+            aspectRatio,
+            quality,
+            status: "processing",
+            requestId: taskId,
+            userId: session.user.id,
+          }
         });
-      } catch (refundErr) {
-        console.error("[DB] Refund rollback failed:", refundErr.message);
+        creationRecorded = true;
+      } catch (retryErr) {
+        console.error("[DB] Could not record creation, rolling back credits:", retryErr.message);
+        try {
+          await prisma.user.update({
+            where: { id: session.user.id },
+            data: { credits: { increment: COST } },
+          });
+        } catch (refundErr) {
+          console.error("[DB] Refund rollback failed:", refundErr.message);
+        }
+        return NextResponse.json({ error: `Failed to create generation record: ${retryErr.message}` }, { status: 500 });
       }
-      return NextResponse.json({ error: `Failed to create generation record: ${dbErr.message}` }, { status: 500 });
     }
 
     return NextResponse.json({
