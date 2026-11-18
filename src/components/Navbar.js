@@ -28,10 +28,10 @@ export default function Navbar() {
           </div>
           <div>
             <span className="text-xl font-black tracking-wider text-white">
-              PORN<span className="bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">MAKE</span>
+              PORN<span className="bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">MAKES</span>
             </span>
             <span className="ml-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-400">
-              WAN 2.2 STUDIO
+              AI STUDIO
             </span>
           </div>
         </Link>

@@ -17,8 +17,8 @@ export const BillingService = {
           price_data: {
             currency: plan.currency || "usd",
             product_data: {
-              name: `PornMake - ${plan.name}`,
-              description: `Purchase ${plan.credits} GPU compute credits for Wan 2.2 video rendering.`,
+              name: `PornMakes - ${plan.name}`,
+              description: `Purchase ${plan.credits} GPU compute credits for AI video rendering.`,
             },
             unit_amount: plan.price,
           },

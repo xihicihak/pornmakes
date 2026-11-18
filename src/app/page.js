@@ -372,7 +372,7 @@ export default function HomePage() {
                 <div className="flex gap-2">
                   <a
                     href={generatedVideo}
-                    download="wan2.2-video.mp4"
+                    download="pornmakes-video.mp4"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 py-2.5 text-xs font-semibold text-white hover:bg-zinc-700 transition-all"

@@ -3,8 +3,8 @@ import { Providers } from "./providers";
 import AgeGateModal from "@/components/AgeGateModal";
 
 export const metadata = {
-  title: "PornMake - Wan 2.2 Studio | Next-Gen AI Video Generator",
-  description: "Create hyper-realistic, cinematic AI videos from text and photos powered by the Wan 2.2 engine.",
+  title: "PornMakes | Next-Gen AI Video Generator",
+  description: "Create hyper-realistic, cinematic AI videos from text and photos powered by next-generation neural video engines.",
 };
 
 export default function RootLayout({ children }) {

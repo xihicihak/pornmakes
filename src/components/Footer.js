@@ -11,8 +11,8 @@ export default function Footer() {
     <footer className="w-full border-t border-zinc-800/80 bg-[#090a0f] py-8 text-center text-xs text-zinc-500 mt-auto">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-zinc-300">PORNMAKE</span>
-          <span className="text-[10px] text-zinc-600">WAN 2.2 STUDIO</span>
+          <span className="font-bold text-zinc-300">PORNMAKES</span>
+          <span className="text-[10px] text-zinc-600">AI STUDIO</span>
           <span className="text-zinc-600">•</span>
           <span>&copy; {currentYear} {t("footer.allRightsReserved")}</span>
         </div>

@@ -66,10 +66,10 @@ export async function GET() {
       recentUsers,
       recentCreations,
       system: {
-        comfyUiUrl: process.env.COMFYUI_API_URL || config.ai.comfyui.apiUrl || "https://merely-parks-scores-lightning.trycloudflare.com",
+        comfyUiUrl: process.env.COMFYUI_API_URL || "http://127.0.0.1:8188",
         nodeEnv: process.env.NODE_ENV || "production",
         appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://www.pornmakes.com",
-        engine: "Wan 2.2 Studio (14B T2V/I2V)"
+        engine: "PornMakes Neural Engine (T2V/I2V)"
       }
     });
   } catch (err) {

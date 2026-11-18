@@ -211,14 +211,14 @@ export default function AdminPage() {
                   Admin Master
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-400">Wan 2.2 Studio · Cluster Operations & Monitoring</p>
+              <p className="text-[11px] text-zinc-400">PornMakes Studio · Cluster Operations & Monitoring</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-xs text-zinc-400">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Cluster: {stats?.system?.engine || "Wan 2.2 (14B)"}</span>
+              <span>Cluster: {stats?.system?.engine || "Neural Video Engine (Ultra HD)"}</span>
             </div>
 
             <div className="flex items-center gap-2 pl-3 border-l border-zinc-800">
@@ -659,7 +659,7 @@ export default function AdminPage() {
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/60 border border-zinc-800">
                   <span className="text-zinc-400">Video Model Pipeline</span>
-                  <span className="font-semibold text-amber-300">Wan 2.2 14B (T2V / I2V)</span>
+                  <span className="font-semibold text-amber-300">Ultra-HD Neural Engine (T2V / I2V)</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/60 border border-zinc-800">
                   <span className="text-zinc-400">Auth Strategy</span>

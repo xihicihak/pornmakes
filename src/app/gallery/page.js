@@ -29,6 +29,12 @@ export default function GalleryPage() {
   const { t } = useTranslation();
   const router = useRouter();
 
+  const formatQuality = (q) => {
+    if (!q) return "Ultra HD";
+    if (typeof q === "string" && q.toLowerCase().includes("fast")) return "Fast Turbo";
+    return "Ultra HD";
+  };
+
   // Active Tab: "my" (我的视频仓库) vs "square" (创作者广场)
   const [activeTab, setActiveTab] = useState("square");
   const [myCreations, setMyCreations] = useState([]);
@@ -460,7 +466,7 @@ export default function GalleryPage() {
                         </div>
 
                         <div className="absolute top-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-mono text-zinc-300 backdrop-blur-md">
-                          {item.quality || "Wan 2.2"}
+                          {formatQuality(item.quality)}
                         </div>
 
                         {/* Hover Overlay Play Icon */}
@@ -623,7 +629,7 @@ export default function GalleryPage() {
                         </div>
 
                         <div className="absolute top-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-mono text-zinc-300 backdrop-blur-md z-10">
-                          {item.quality || "Wan 2.2"}
+                          {formatQuality(item.quality)}
                         </div>
 
                         {/* Locked Overlay Screen */}
@@ -759,7 +765,7 @@ export default function GalleryPage() {
                 <div className="mt-1 flex items-center gap-2 text-[10px] text-zinc-400">
                   <span>{t("gallery.creator")}: {unlockTarget.creator?.name || "Community Creator"}</span>
                   <span>•</span>
-                  <span>{unlockTarget.quality || "Wan 2.2"}</span>
+                  <span>{formatQuality(unlockTarget.quality)}</span>
                 </div>
               </div>
             </div>
@@ -974,7 +980,7 @@ export default function GalleryPage() {
               <div className="flex items-center justify-between text-xs text-zinc-500 font-bold uppercase tracking-wider">
                 <span>{t("gallery.modalPrompt")}</span>
                 <span className="font-mono text-rose-400 font-normal">
-                  {selectedVideo.quality || "Wan 2.2"} •{" "}
+                  {formatQuality(selectedVideo.quality)} •{" "}
                   {new Date(selectedVideo.createdAt).toLocaleDateString()}
                 </span>
               </div>
