@@ -223,11 +223,15 @@ export async function POST(req) {
     } catch (dbErr) {
       console.error("[DB] Could not record creation, rolling back credits:", dbErr.message);
       // Automatic compensation refund on database error
-      await prisma.user.update({
-        where: { id: session.user.id },
-        data: { credits: { increment: COST } },
-      });
-      return NextResponse.json({ error: "Failed to create generation record" }, { status: 500 });
+      try {
+        await prisma.user.update({
+          where: { id: session.user.id },
+          data: { credits: { increment: COST } },
+        });
+      } catch (refundErr) {
+        console.error("[DB] Refund rollback failed:", refundErr.message);
+      }
+      return NextResponse.json({ error: `Failed to create generation record: ${dbErr.message}` }, { status: 500 });
     }
 
     return NextResponse.json({
