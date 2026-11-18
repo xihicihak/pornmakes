@@ -55,7 +55,7 @@ const config = {
   },
   ai: {
     comfyui: {
-      apiUrl: process.env.COMFYUI_API_URL || "http://127.0.0.1:8188",
+      apiUrl: process.env.COMFYUI_API_URL || "https://merely-parks-scores-lightning.trycloudflare.com",
       defaultT2VModel: "wan2.1_t2v_14B_bf16.safetensors",
       defaultI2VModel: "wan2.1_i2v_14B_720p.safetensors",
     },
