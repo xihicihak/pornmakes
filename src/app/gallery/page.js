@@ -177,7 +177,7 @@ export default function GalleryPage() {
       // Mark video as unlocked locally
       setSquareCreations((prev) =>
         prev.map((c) =>
-          c.id === creation.id ? { ...c, isUnlocked: true } : c
+          c.id === creation.id ? { ...c, isUnlocked: true, videoFiles: data.videoFiles || c.videoFiles } : c
         )
       );
 
@@ -186,6 +186,7 @@ export default function GalleryPage() {
       setSelectedVideo({
         ...creation,
         isUnlocked: true,
+        videoFiles: data.videoFiles || creation.videoFiles,
       });
     } catch (err) {
       toast.error(err.message || "Failed to unlock video");
@@ -563,8 +564,9 @@ export default function GalleryPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               <AnimatePresence>
                 {squareCreations.map((item) => {
-                  const mediaUrl = item.videoFiles?.[0] || item.imageUrl;
-                  const isAccessible = item.isUnlocked || item.isOwner;
+                  const isAccessible = Boolean(item.isUnlocked || item.isOwner);
+                  const mediaUrl = isAccessible ? (item.videoFiles?.[0] || item.imageUrl) : null;
+                  const posterUrl = item.imageUrl || null;
 
                   return (
                     <motion.div
@@ -584,23 +586,25 @@ export default function GalleryPage() {
                         }}
                         className="relative aspect-video w-full overflow-hidden rounded-xl bg-black cursor-pointer"
                       >
-                        {mediaUrl ? (
+                        {isAccessible && mediaUrl ? (
                           <video
                             src={mediaUrl}
                             muted
                             loop
                             playsInline
-                            className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
-                              !isAccessible
-                                ? "filter blur-[6px] brightness-75 scale-105"
-                                : ""
-                            }`}
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                             onMouseEnter={(e) => {
-                              if (isAccessible) e.target.play().catch(() => {});
+                              e.target.play().catch(() => {});
                             }}
                             onMouseLeave={(e) => {
-                              if (isAccessible) e.target.pause();
+                              e.target.pause();
                             }}
+                          />
+                        ) : posterUrl ? (
+                          <img
+                            src={posterUrl}
+                            alt={item.prompt || "Creation preview"}
+                            className="h-full w-full object-cover transition-transform duration-300 filter blur-[6px] brightness-75 scale-105"
                           />
                         ) : (
                           <div className="flex h-full items-center justify-center text-zinc-600">

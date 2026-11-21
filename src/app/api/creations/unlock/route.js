@@ -40,6 +40,7 @@ export async function POST(req) {
       return NextResponse.json({
         success: true,
         isUnlocked: true,
+        videoFiles: creation.videoFiles,
         message: "You are the creator of this video.",
       });
     }
@@ -58,6 +59,7 @@ export async function POST(req) {
       return NextResponse.json({
         success: true,
         isUnlocked: true,
+        videoFiles: creation.videoFiles,
         message: "Video is already unlocked.",
       });
     }
@@ -128,6 +130,7 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       isUnlocked: true,
+      videoFiles: creation.videoFiles,
       newCredits: updatedBuyer.credits,
       amountPaid: price,
       creatorAmount,

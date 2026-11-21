@@ -372,7 +372,7 @@ export async function GET(req) {
     const TOTAL_SIM_DURATION = 9000; // 9 seconds for smooth realistic synthesis
 
     if (elapsed >= TOTAL_SIM_DURATION) {
-      const demoVideo = "https://assets.mixkit.co/videos/preview/mixkit-futuristic-city-with-flying-cars-41551-large.mp4";
+      const demoVideo = "/demo.mp4";
       try {
         if (prisma?.creation) {
           await prisma.creation.updateMany({

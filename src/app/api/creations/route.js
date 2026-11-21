@@ -48,7 +48,8 @@ export async function GET(req) {
           id: c.id,
           prompt: c.prompt,
           imageUrl: c.imageUrl,
-          videoFiles: c.videoFiles,
+          // CRITICAL SECURITY FIX: Never expose videoFiles for locked creations to prevent DevTools bypass
+          videoFiles: isUnlocked ? c.videoFiles : null,
           inputImages: imagesList,
           aspectRatio: c.aspectRatio,
           resolution: c.resolution,

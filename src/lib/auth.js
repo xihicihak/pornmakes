@@ -34,10 +34,10 @@ providers.push(
         const email = credentials.email.trim().toLowerCase();
         const isAdminEmail = adminEmails.includes(email);
 
-        // Security Guard: in production, require ADMIN_SECRET for direct admin login
-        if (isAdminEmail && process.env.NODE_ENV === "production" && process.env.ADMIN_SECRET) {
-          if (credentials.apiKey !== process.env.ADMIN_SECRET) {
-            throw new Error("Admin authentication requires a valid Admin Secret key in production.");
+        // Security Guard: in production, require verified Google OAuth or a matching ADMIN_SECRET for admin emails
+        if (isAdminEmail && process.env.NODE_ENV === "production") {
+          if (!process.env.ADMIN_SECRET || credentials.apiKey !== process.env.ADMIN_SECRET) {
+            throw new Error("Admin accounts must sign in via verified Google OAuth or supply the ADMIN_SECRET key.");
           }
         }
 
